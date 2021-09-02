@@ -5,9 +5,25 @@ import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 
+/**
+ * A class to retrieve a preconfigured instance of SSLContext.
+ *
+ * @author Konrad Rej
+ * @author www.konradrej.com
+ * @version 1.0
+ */
 public class SSLContextFactory {
     private static final ClassLoader classLoader = SSLContextFactory.class.getClassLoader();
 
+    /**
+     * Given keystore and truststore information returns a configured SSLContext.
+     *
+     * @param keyStoreFilename keystore filename to get from resources folder
+     * @param keyStorePassword keystore password
+     * @param trustStoreFilename truststore filename to get from resources folder
+     * @param trustStorePassword truststore password
+     * @return a configured SSLContext instance or null if an error occurred
+     */
     public static SSLContext getConfiguredInstance(String keyStoreFilename, String keyStorePassword, String trustStoreFilename, String trustStorePassword) {
         KeyManager[] keyStoreManagers = getKeyManagers(keyStoreFilename, keyStorePassword);
         TrustManager[] trustStoreManagers = getTrustManagers(trustStoreFilename, trustStorePassword);

@@ -1,5 +1,24 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
+    }
+}
+
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
+}
+
+jar {
+    manifest {
+        attributes (
+                'Main-Class': 'TempApp'
+        )
+    }
 }
 
 group 'com.konradrej.rcpc'
