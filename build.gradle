@@ -16,7 +16,7 @@ plugins {
 jar {
     manifest {
         attributes (
-                'Main-Class': 'TempApp'
+                'Main-Class': 'App'
         )
     }
 }
