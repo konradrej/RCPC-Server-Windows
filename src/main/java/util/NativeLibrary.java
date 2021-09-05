@@ -18,6 +18,11 @@ public interface NativeLibrary extends Library {
     NativeLibrary INSTANCE = Native.load("RCPC-Native-Library", NativeLibrary.class);
 
     /**
+     * Retrieves RCPC Native Library version.
+     */
+    double getVersion();
+
+    /**
      * Simulates next track key press.
      */
     void nextTrack();
