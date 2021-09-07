@@ -1,3 +1,5 @@
+package com.konradrej.rcpc.server;
+
 import java.io.File;
 
 /**

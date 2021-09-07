@@ -1,4 +1,4 @@
-package util;
+package com.konradrej.rcpc.server.util;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;

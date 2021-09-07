@@ -1,4 +1,6 @@
-package util;
+package com.konradrej.rcpc.server.util;
+
+import com.konradrej.rcpc.core.MessageType;
 
 import java.util.prefs.Preferences;
 
@@ -36,7 +38,7 @@ public class PreferenceManager {
      * Set given preference for the system to a given value.
      *
      * @param preference preference to set
-     * @param value value for preference to set
+     * @param value      value for preference to set
      */
     public static void setSystemPreference(Preference preference, String value) {
         String preferenceString = String.valueOf(preference);
@@ -48,7 +50,7 @@ public class PreferenceManager {
      * Set given preference for the user to a given value.
      *
      * @param preference preference to set
-     * @param value value for preference to set
+     * @param value      value for preference to set
      */
     public static void setUserPreference(Preference preference, String value) {
         String preferenceString = String.valueOf(preference);

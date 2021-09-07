@@ -10,4 +10,4 @@ gen/**
 .gradle/
 build/
 bin/
-*.jar
+gradle/

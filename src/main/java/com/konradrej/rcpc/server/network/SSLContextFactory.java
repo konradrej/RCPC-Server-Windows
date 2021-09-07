@@ -1,4 +1,4 @@
-package network;
+package com.konradrej.rcpc.server.network;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -18,8 +18,8 @@ public class SSLContextFactory {
     /**
      * Given keystore and truststore information returns a configured SSLContext.
      *
-     * @param keyStoreFilename keystore filename to get from resources folder
-     * @param keyStorePassword keystore password
+     * @param keyStoreFilename   keystore filename to get from resources folder
+     * @param keyStorePassword   keystore password
      * @param trustStoreFilename truststore filename to get from resources folder
      * @param trustStorePassword truststore password
      * @return a configured SSLContext instance or null if an error occurred

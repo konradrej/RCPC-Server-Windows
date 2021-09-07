@@ -1,4 +1,4 @@
-package network;
+package com.konradrej.rcpc.server.network;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
