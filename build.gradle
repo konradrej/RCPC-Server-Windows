@@ -34,7 +34,6 @@ dependencies {
     implementation 'net.java.dev.jna:jna:5.9.0'
     implementation 'net.java.dev.jna:jna-platform:5.9.0'
     implementation 'org.jmdns:jmdns:3.5.7'
-    implementation 'com.kstruct:gethostname4j:0.0.3'
     implementation 'org.slf4j:slf4j-api:1.7.32'
     implementation 'org.slf4j:slf4j-simple:1.7.32'
     implementation 'org.apache.logging.log4j:log4j-api:2.14.1'
