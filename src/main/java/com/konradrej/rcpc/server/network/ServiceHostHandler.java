@@ -8,6 +8,7 @@ import javax.jmdns.ServiceInfo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,13 +25,6 @@ public class ServiceHostHandler {
     private static final String SERVICE_TYPE = "_rcpc._tcp.local";
     private static final Thread onShutdown = new Thread(ServiceHostHandler::stop);
     private static final List<JmDNS> jmDNS = new ArrayList<>();
-
-    /**
-     * Registers DNS-SD RCPC service on port 8395.
-     */
-    public static void start() {
-        ServiceHostHandler.start(8395);
-    }
 
     /**
      * Registers DNS-SD RCPC service.
@@ -56,8 +50,6 @@ public class ServiceHostHandler {
                     LOGGER.info("DNS-SD service registered. Service name: " + serviceName);
                 }
             }
-
-            Runtime.getRuntime().addShutdownHook(onShutdown);
         } catch (IOException e) {
             LOGGER.error("DNS-SD service could not be registered.\n" + e.getLocalizedMessage());
 
@@ -69,11 +61,18 @@ public class ServiceHostHandler {
      * Unregisters DNS-SD RCPC service.
      */
     public static void stop() {
-        jmDNS.forEach(JmDNS::unregisterAllServices);
+        Iterator<JmDNS> it = jmDNS.iterator();
+        while(it.hasNext()){
+            JmDNS jmDNS = it.next();
 
-        LOGGER.info("DNS-SD service unregistered.");
+            jmDNS.unregisterAllServices();
+            try {
+                jmDNS.close();
+            } catch (IOException ignored){}
+            it.remove();
+        }
 
-        Runtime.getRuntime().removeShutdownHook(onShutdown);
+        LOGGER.info("DNS-SD services unregistered.");
     }
 
     private ServiceHostHandler() {
