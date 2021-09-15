@@ -1,7 +1,5 @@
 package com.konradrej.rcpc.server.util;
 
-import com.konradrej.rcpc.core.MessageType;
-
 import java.util.prefs.Preferences;
 
 /**
