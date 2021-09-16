@@ -4,16 +4,35 @@ import javax.net.ssl.*;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Properties;
 
 /**
  * A class to retrieve a preconfigured instance of SSLContext.
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.0
+ * @version 1.1
+ * @since 1.0
  */
 public class SSLContextFactory {
     private static final ClassLoader classLoader = SSLContextFactory.class.getClassLoader();
+    private static Properties properties = null;
+
+    /**
+     * Configures a SSLContext according to ssl.properties resource settings.
+     *
+     * @return a configured SSLContext instance or null if an error occurred
+     * @throws IOException if ssl.properties resource is missing
+     * @since 1.1
+     */
+    public static SSLContext getPreconfigured() throws IOException {
+        if (properties == null) {
+            properties = new Properties();
+            properties.load(SSLContextFactory.class.getClassLoader().getResource("ssl.properties").openStream());
+        }
+
+        return getConfiguredInstance(properties.getProperty("keystore.filename"), properties.getProperty("keystore.password"), properties.getProperty("truststore.filename"), properties.getProperty("truststore.password"));
+    }
 
     /**
      * Given keystore and truststore information returns a configured SSLContext.
@@ -23,6 +42,7 @@ public class SSLContextFactory {
      * @param trustStoreFilename truststore filename to get from resources folder
      * @param trustStorePassword truststore password
      * @return a configured SSLContext instance or null if an error occurred
+     * @since 1.0
      */
     public static SSLContext getConfiguredInstance(String keyStoreFilename, String keyStorePassword, String trustStoreFilename, String trustStorePassword) {
         KeyManager[] keyStoreManagers = getKeyManagers(keyStoreFilename, keyStorePassword);
