@@ -71,4 +71,13 @@ public interface NativeLibrary extends Library {
      * @return current volume
      */
     float getVolume();
+
+
+    /**
+     * Simulate mouse scroll.
+     *
+     * @param distanceX scroll distance in X axis
+     * @param distanceY scroll distance in Y axis
+     */
+    void scroll(float distanceX, float distanceY);
 }
