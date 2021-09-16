@@ -62,6 +62,13 @@ public class AcceptHandler extends SocketHandler {
                 }
 
                 if (message != null) {
+                    PointerInfo pointerInfo;
+                    Point point;
+
+                    Map<String, Object> additionalData;
+                    float distanceX;
+                    float distanceY;
+
                     switch (message.getMessageType()) {
                         case ACTION_STOP:
                             NativeLibrary.INSTANCE.stop();
@@ -103,21 +110,26 @@ public class AcceptHandler extends SocketHandler {
                             }
                             break;
                         case ACTION_MOVE:
-                            PointerInfo pointerInfo = MouseInfo.getPointerInfo();
-                            Point point = pointerInfo.getLocation();
+                            pointerInfo = MouseInfo.getPointerInfo();
+                            point = pointerInfo.getLocation();
 
-                            Map<String, Object> additionalData = message.getAdditionalData();
-                            float distanceX = (float) additionalData.get("distanceX");
-                            float distanceY = (float) additionalData.get("distanceY");
+                            additionalData = message.getAdditionalData();
+                            distanceX = (float) additionalData.get("distanceX");
+                            distanceY = (float) additionalData.get("distanceY");
 
                             int x = (int) (point.getX() - distanceX);
                             int y = (int) (point.getY() - distanceY);
 
                             robot.mouseMove(x, y);
                             break;
-                        case ACTION_CLICK_AND_DRAG:
-                            // TODO
                         case ACTION_SCROLL:
+                            additionalData = message.getAdditionalData();
+                            distanceX = (float) additionalData.get("distanceX") * 2f;
+                            distanceY = (float) additionalData.get("distanceY") * 2f;
+
+                            NativeLibrary.INSTANCE.scroll(distanceX, -distanceY);
+                            break;
+                        case ACTION_CLICK_AND_DRAG:
                             // TODO
                         default:
                             LOGGER.error("Message type not implemented: " + message.getMessageType().name());
