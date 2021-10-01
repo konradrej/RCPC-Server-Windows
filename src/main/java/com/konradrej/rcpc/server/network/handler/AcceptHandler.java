@@ -1,5 +1,6 @@
 package com.konradrej.rcpc.server.network.handler;
 
+import com.konradrej.rcpc.core.network.MessageType;
 import com.konradrej.rcpc.core.network.SocketHandler;
 import com.konradrej.rcpc.core.network.Message;
 import com.konradrej.rcpc.server.util.NativeLibrary;
@@ -42,6 +43,9 @@ public class AcceptHandler extends SocketHandler {
      */
     public AcceptHandler(Socket socket) {
         super(socket, LOGGER);
+
+        Message message = new Message(MessageType.INFO_USER_ACCEPTED_CONNECTION);
+        outputQueue.add(message);
     }
 
     /**

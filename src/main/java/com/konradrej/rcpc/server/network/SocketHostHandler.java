@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class SocketHostHandler {
@@ -26,7 +26,8 @@ public class SocketHostHandler {
     private static boolean available = true;
     private static boolean stop = false;
     private static ServerSocket serverSocket;
-    private static Thread handlerThread = null;
+    private static SocketHandler socketHandler = null;
+    private static Thread socketHandlerThread = null;
 
     /**
      * Starts connection handling.
@@ -40,50 +41,60 @@ public class SocketHostHandler {
             throw new IllegalArgumentException("Handler manager can not be null");
         }
 
-        ServerSocketFactory serverSocketFactory;
+        Thread serverThread = new Thread(() -> {
+            ServerSocketFactory serverSocketFactory;
 
-        try {
-            serverSocketFactory = SSLContextFactory.getPreconfigured().getServerSocketFactory();
-        } catch (IOException e) {
-            serverSocketFactory = ServerSocketFactory.getDefault();
-        }
-
-        try {
-            serverSocket = serverSocketFactory.createServerSocket(666);
-
-            LOGGER.info("Started server socket.");
-            LOGGER.info("Waiting for connection.");
-
-            ServiceHostHandler.start(serverSocket.getLocalPort());
-
-            while (!stop) {
-                Socket socket = serverSocket.accept();
-                LOGGER.info("Socket accepted.");
-
-                if (handlerThread == null || !handlerThread.isAlive()) {
-                    available = true;
-                }
-
-                SocketHandler socketHandler = socketHandlerManager.getHandler(socket, available);
-                socketHandlers.add(socketHandler);
-
-                Thread temp = new Thread(socketHandler);
-                temp.start();
-
-                if (available) {
-                    LOGGER.info("New connection established.");
-
-                    handlerThread = temp;
-                    available = false;
-                } else {
-                    LOGGER.info("Connection refused.");
-                }
+            try {
+                serverSocketFactory = SSLContextFactory.getPreconfigured().getServerSocketFactory();
+            } catch (IOException e) {
+                serverSocketFactory = ServerSocketFactory.getDefault();
             }
-        } catch (IOException e) {
-            LOGGER.error("Error with server socket. Error: " + e.getLocalizedMessage());
-        }
 
-        stop();
+            try {
+                serverSocket = serverSocketFactory.createServerSocket(666);
+
+                LOGGER.info("Started server socket.");
+                LOGGER.info("Waiting for connection.");
+
+                ServiceHostHandler.start(serverSocket.getLocalPort());
+
+                while (!stop) {
+                    Socket socket = serverSocket.accept();
+                    LOGGER.info("Socket accepted.");
+
+                    if (socketHandlerThread == null || !socketHandlerThread.isAlive()) {
+                        available = true;
+                    }
+
+                    SocketHandler tempSocketHandler = socketHandlerManager.getHandler(socket, available);
+                    socketHandlers.add(tempSocketHandler);
+
+                    Thread tempSocketHandlerThread = new Thread(tempSocketHandler);
+                    tempSocketHandlerThread.start();
+
+                    if (available) {
+                        LOGGER.info("New connection established.");
+
+                        if(socketHandler != null){
+                            socketHandler.disconnect();
+                        }
+
+                        socketHandler = tempSocketHandler;
+                        socketHandlerThread = tempSocketHandlerThread;
+                        available = false;
+                    } else {
+                        LOGGER.info("Connection refused.");
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.error("Error with server socket. Error: " + e.getLocalizedMessage());
+            }
+
+            ServiceHostHandler.stop();
+            stop();
+        });
+
+        serverThread.start();
     }
 
     /**
@@ -92,7 +103,6 @@ public class SocketHostHandler {
      * @since 1.0
      */
     public static void stop() {
-        ServiceHostHandler.stop();
         stop = true;
 
         for (SocketHandler socketHandler : socketHandlers) {
@@ -103,6 +113,10 @@ public class SocketHostHandler {
             serverSocket.close();
         } catch (IOException ignored) {
         }
+    }
+
+    public static SocketHandler getSocketHandler(){
+        return SocketHostHandler.socketHandler;
     }
 
     /**
