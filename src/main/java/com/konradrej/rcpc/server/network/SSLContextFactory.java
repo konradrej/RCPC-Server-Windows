@@ -4,6 +4,7 @@ import javax.net.ssl.*;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -82,7 +83,7 @@ public class SSLContextFactory {
         if (trustStoreFilename != null && trustStorePassword != null) {
             try {
                 char[] passwordArr = trustStorePassword.toCharArray();
-                String trustStoreType = trustStoreFilename.substring(trustStoreFilename.lastIndexOf("-") + 1);
+                String trustStoreType = trustStoreFilename.substring(trustStoreFilename.lastIndexOf(".") + 1);
 
                 KeyStore trustStore = KeyStore.getInstance(trustStoreType);
                 trustStore.load(classLoader.getResourceAsStream(trustStoreFilename), passwordArr);
