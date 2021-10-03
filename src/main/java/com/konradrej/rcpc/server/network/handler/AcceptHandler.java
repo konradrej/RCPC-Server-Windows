@@ -133,6 +133,12 @@ public class AcceptHandler extends SocketHandler {
 
                             NativeLibrary.INSTANCE.scroll(distanceX, -distanceY);
                             break;
+                        case ACTION_GET_CURRENT_VOLUME:
+                            float currentVolume = NativeLibrary.INSTANCE.getVolume();
+                            Message toSend = new Message(MessageType.INFO_CURRENT_VOLUME_UPDATE, currentVolume);
+
+                            outputQueue.add(toSend);
+                            break;
                         case ACTION_CLICK_AND_DRAG:
                             // TODO
                         default:
