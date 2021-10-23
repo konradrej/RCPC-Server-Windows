@@ -14,13 +14,10 @@ import java.util.Map;
 
 /**
  * Handler for accepted connections.
- * <p>
- * TODO: Handle rest of received message types
- *       Add support for sending messages like current volume info
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 public class AcceptHandler extends SocketHandler {
