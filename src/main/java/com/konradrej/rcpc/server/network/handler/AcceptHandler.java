@@ -139,8 +139,34 @@ public class AcceptHandler extends SocketHandler {
 
                             outputQueue.add(toSend);
                             break;
-                        case ACTION_CLICK_AND_DRAG:
-                            // TODO
+                        case INFO_USER_CLOSED_CONNECTION:
+                            disconnect();
+                            break;
+                        case ACTION_CLICK_AND_DRAG_START:
+                            if (robot != null) {
+                                robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+                            }
+                            break;
+                        case ACTION_CLICK_AND_DRAG_MOVE:
+                            if (robot != null) {
+                                pointerInfo = MouseInfo.getPointerInfo();
+                                point = pointerInfo.getLocation();
+
+                                additionalData = message.getAdditionalData();
+                                distanceX = (float) additionalData.get("distanceX");
+                                distanceY = (float) additionalData.get("distanceY");
+
+                                x = (int) (point.getX() - distanceX);
+                                y = (int) (point.getY() - distanceY);
+
+                                robot.mouseMove(x, y);
+                            }
+                            break;
+                        case ACTION_CLICK_AND_DRAG_END:
+                            if (robot != null) {
+                                robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+                            }
+                            break;
                         default:
                             LOGGER.error("Message type not implemented: " + message.getMessageType().name());
                     }
