@@ -6,6 +6,8 @@ import com.konradrej.rcpc.core.network.SocketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
@@ -21,14 +23,28 @@ public class RefuseHandler extends SocketHandler {
     private final boolean userCancelled;
 
     /**
-     * Constructor.
+     * Simplified constructor.
      *
      * @param socket        the connected socket
      * @param userCancelled true if user cancelled connection
      * @since 1.0
      */
     public RefuseHandler(Socket socket, boolean userCancelled) {
-        super(socket, false, true, LOGGER);
+        super(socket, false, true, LOGGER, null, null);
+
+        this.userCancelled = userCancelled;
+    }
+
+    /**
+     * Full constructor.
+     *
+     * @param socket             the connected socket
+     * @param userCancelled      true if user cancelled connection
+     * @param objectOutputStream object output stream to pass, null to create from socket
+     * @param objectInputStream  object input stream to pass, null to create from socket
+     */
+    public RefuseHandler(Socket socket, boolean userCancelled, ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream) {
+        super(socket, false, true, LOGGER, objectOutputStream, objectInputStream);
 
         this.userCancelled = userCancelled;
     }

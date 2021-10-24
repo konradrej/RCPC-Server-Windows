@@ -9,6 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Map;
 
@@ -38,8 +40,8 @@ public class AcceptHandler extends SocketHandler {
      * @param socket the connected socket
      * @since 1.0
      */
-    public AcceptHandler(Socket socket) {
-        super(socket, LOGGER);
+    public AcceptHandler(Socket socket, ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream) {
+        super(socket, LOGGER, objectOutputStream, objectInputStream);
 
         Message message = new Message(MessageType.INFO_USER_ACCEPTED_CONNECTION);
         outputQueue.add(message);

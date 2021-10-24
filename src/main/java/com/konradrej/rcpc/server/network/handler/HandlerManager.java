@@ -1,7 +1,7 @@
 package com.konradrej.rcpc.server.network.handler;
 
+import com.konradrej.rcpc.core.network.Message;
 import com.konradrej.rcpc.core.network.SocketHandler;
-import com.konradrej.rcpc.server.TempApp;
 import com.konradrej.rcpc.server.network.SocketHostHandler;
 
 import javax.imageio.ImageIO;
@@ -9,6 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
@@ -19,21 +21,21 @@ import java.net.Socket;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
     /**
-     * TODO
+     * Given socket and available status returns the correct socket handler.
      *
-     * @param socket
-     * @param alreadyConnected
-     * @return
+     * @param socket    connected socket
+     * @param available server available status
+     * @return a instance of SocketHandler setup with given socket
      * @since 1.0
      */
     @Override
-    public SocketHandler getHandler(Socket socket, boolean alreadyConnected) {
-        if (alreadyConnected) {
+    public SocketHandler getHandler(Socket socket, boolean available) {
+        if (available) {
             String[] options = {
                     "Yes, connect.",
                     "No, abort connection."
@@ -56,6 +58,20 @@ public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
                 e.printStackTrace();
             }
 
+            ObjectOutputStream objectOutputStream = null;
+            ObjectInputStream objectInputStream = null;
+            String uuid = null;
+
+            try {
+                objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+                objectInputStream = new ObjectInputStream(socket.getInputStream());
+
+                Message message = (Message) objectInputStream.readObject();
+                uuid = (String) message.getMessageData();
+            } catch (IOException | ClassNotFoundException e) {
+                System.err.println("Error: " + e.getMessage());
+            }
+
             int acceptConnection = JOptionPane.showOptionDialog(
                     transparentFrame,
                     "Would you like to accept this connection?",
@@ -70,9 +86,9 @@ public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
             transparentFrame.setVisible(false);
 
             if (acceptConnection == JOptionPane.YES_OPTION) {
-                return new AcceptHandler(socket);
+                return new AcceptHandler(socket, objectOutputStream, objectInputStream);
             } else {
-                return new RefuseHandler(socket, true);
+                return new RefuseHandler(socket, true, objectOutputStream, objectInputStream);
             }
         }
 
