@@ -1,8 +1,8 @@
 package com.konradrej.rcpc.server.network.handler;
 
+import com.konradrej.rcpc.core.network.Message;
 import com.konradrej.rcpc.core.network.MessageType;
 import com.konradrej.rcpc.core.network.SocketHandler;
-import com.konradrej.rcpc.core.network.Message;
 import com.konradrej.rcpc.server.util.NativeLibrary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -180,7 +180,7 @@ public class AcceptHandler extends SocketHandler {
      * @since 1.0
      */
     @Override
-    public void disconnect(){
+    public void disconnect() {
         sendMessage(new Message(MessageType.INFO_USER_CLOSED_CONNECTION));
 
         super.disconnect();

@@ -62,13 +62,14 @@ public class ServiceHostHandler {
      */
     public static void stop() {
         Iterator<JmDNS> it = jmDNS.iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             JmDNS jmDNS = it.next();
 
             jmDNS.unregisterAllServices();
             try {
                 jmDNS.close();
-            } catch (IOException ignored){}
+            } catch (IOException ignored) {
+            }
             it.remove();
         }
 

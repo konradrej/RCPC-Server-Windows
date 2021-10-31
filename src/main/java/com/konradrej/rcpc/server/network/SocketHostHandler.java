@@ -33,7 +33,7 @@ public class SocketHostHandler {
      * Starts connection handling.
      *
      * @param socketHandlerManager implementation of SocketHandlerManager for picking handler
-     * @param port port to start server on
+     * @param port                 port to start server on
      * @throws IllegalArgumentException if SocketHandlerManager is null
      * @since 1.0
      */

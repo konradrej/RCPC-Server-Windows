@@ -4,7 +4,6 @@ import javax.net.ssl.*;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.Properties;
 
 /**
