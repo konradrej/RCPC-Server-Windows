@@ -2,6 +2,7 @@ package com.konradrej.rcpc.server.ui;
 
 import com.konradrej.rcpc.server.database.AutoConnectDeviceUtil;
 import com.konradrej.rcpc.server.database.HibernateUtil;
+import com.konradrej.rcpc.server.network.ServiceHostHandler;
 import com.konradrej.rcpc.server.network.SocketHostHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,7 @@ import java.io.InputStream;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class SystemTrayHandler {
@@ -71,13 +72,18 @@ public class SystemTrayHandler {
         disconnectItem.addActionListener((actionEvent) ->
                 SocketHostHandler.getSocketHandler().disconnect());
 
-        clearSavedDevicesItem.addActionListener((actionEvent) ->
-                AutoConnectDeviceUtil.clearDevices());
+        clearSavedDevicesItem.addActionListener((actionEvent) -> {
+            AutoConnectDeviceUtil.clearDevices();
+            DialogUtil.showInformationDialog(FrameHandler.getTransparentFrame(), "Devices cleared.", "All saved devices were cleared.");
+        });
 
         exitItem.addActionListener((actionEvent) -> {
             SocketHostHandler.stop();
+            ServiceHostHandler.stop();
             HibernateUtil.shutdown();
             systemTray.remove(trayIcon);
+
+            System.exit(0);
         });
 
         popupMenu.add(disconnectItem);
@@ -88,21 +94,18 @@ public class SystemTrayHandler {
     }
 
     private void initializeTrayIcon() {
-        ImageIcon icon;
+        ImageIcon icon = null;
         try {
-            InputStream inputStream = SystemTrayHandler.class.getResourceAsStream("icon.png");
+            InputStream inputStream = SystemTrayHandler.class.getClassLoader().getResourceAsStream("icon.png");
 
             if (inputStream != null) {
                 icon = new ImageIcon(ImageIO.read(inputStream));
-
-                if (trayIcon != null) {
-                    trayIcon = new TrayIcon(icon.getImage());
-                    trayIcon.setImageAutoSize(true);
-                    trayIcon.setPopupMenu(popupMenu);
-                }
             }
         } catch (IOException e) {
             LOGGER.error("Could not load tray icon. Error: " + e.getMessage());
         }
+
+        trayIcon = new TrayIcon(icon.getImage(), "RCPC Server", popupMenu);
+        trayIcon.setImageAutoSize(true);
     }
 }

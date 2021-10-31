@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 public class SocketHostHandler {
@@ -33,30 +33,30 @@ public class SocketHostHandler {
      * Starts connection handling.
      *
      * @param socketHandlerManager implementation of SocketHandlerManager for picking handler
+     * @param port port to start server on
      * @throws IllegalArgumentException if SocketHandlerManager is null
      * @since 1.0
      */
-    public static void start(SocketHandlerManager socketHandlerManager) throws IllegalArgumentException {
+    public static void start(SocketHandlerManager socketHandlerManager, int port) throws IllegalArgumentException {
         if (socketHandlerManager == null) {
             throw new IllegalArgumentException("Handler manager can not be null");
         }
 
-        Thread serverThread = new Thread(() -> {
+        new Thread(() -> {
             ServerSocketFactory serverSocketFactory;
 
             try {
                 serverSocketFactory = SSLContextFactory.getPreconfigured().getServerSocketFactory();
             } catch (IOException e) {
+                LOGGER.error("Could not get secure server socket factory. Using default instead. Error: " + e.getMessage());
                 serverSocketFactory = ServerSocketFactory.getDefault();
             }
 
             try {
-                serverSocket = serverSocketFactory.createServerSocket(666);
+                serverSocket = serverSocketFactory.createServerSocket(port);
 
                 LOGGER.info("Started server socket.");
-                LOGGER.info("Waiting for connection.");
-
-                ServiceHostHandler.start(serverSocket.getLocalPort());
+                LOGGER.info("Waiting for connections...");
 
                 while (!stop) {
                     Socket socket = serverSocket.accept();
@@ -66,35 +66,31 @@ public class SocketHostHandler {
                         available = true;
                     }
 
-                    SocketHandler tempSocketHandler = socketHandlerManager.getHandler(socket, available);
-                    socketHandlers.add(tempSocketHandler);
+                    SocketHandler socketHandler = socketHandlerManager.getHandler(socket, available);
+                    socketHandlers.add(socketHandler);
 
-                    Thread tempSocketHandlerThread = new Thread(tempSocketHandler);
-                    tempSocketHandlerThread.start();
+                    Thread socketHandlerThread = new Thread(socketHandler);
+                    socketHandlerThread.start();
 
                     if (available) {
                         LOGGER.info("New connection established.");
 
-                        if(socketHandler != null){
-                            socketHandler.disconnect();
-                        }
+                        SocketHostHandler.socketHandler = socketHandler;
+                        SocketHostHandler.socketHandlerThread = socketHandlerThread;
 
-                        socketHandler = tempSocketHandler;
-                        socketHandlerThread = tempSocketHandlerThread;
                         available = false;
                     } else {
                         LOGGER.info("Connection refused.");
                     }
                 }
             } catch (IOException e) {
-                LOGGER.error("Error with server socket. Error: " + e.getLocalizedMessage());
+                if (!stop) {
+                    LOGGER.error("Error with server socket. Error: " + e.getLocalizedMessage());
+                } else {
+                    LOGGER.info("Server socket closed.");
+                }
             }
-
-            ServiceHostHandler.stop();
-            stop();
-        });
-
-        serverThread.start();
+        }).start();
     }
 
     /**
@@ -115,7 +111,7 @@ public class SocketHostHandler {
         }
     }
 
-    public static SocketHandler getSocketHandler(){
+    public static SocketHandler getSocketHandler() {
         return SocketHostHandler.socketHandler;
     }
 

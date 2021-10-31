@@ -13,7 +13,7 @@ import java.io.InputStream;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public class FrameHandler {
@@ -41,7 +41,7 @@ public class FrameHandler {
         transparentFrame.setAlwaysOnTop(true);
 
         try {
-            InputStream inputStream = FrameHandler.class.getResourceAsStream("icon.png");
+            InputStream inputStream = FrameHandler.class.getClassLoader().getResourceAsStream("icon.png");
 
             if (inputStream != null) {
                 ImageIcon icon = new ImageIcon(ImageIO.read(inputStream));

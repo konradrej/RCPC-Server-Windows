@@ -19,7 +19,7 @@ import java.util.Map;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.2
+ * @version 1.3
  * @since 1.0
  */
 public class AcceptHandler extends SocketHandler {
@@ -172,6 +172,18 @@ public class AcceptHandler extends SocketHandler {
                 }
             }
         }
+    }
+
+    /**
+     * Overrides disconnect to send a connection close message before disconnecting.
+     *
+     * @since 1.0
+     */
+    @Override
+    public void disconnect(){
+        sendMessage(new Message(MessageType.INFO_USER_CLOSED_CONNECTION));
+
+        super.disconnect();
     }
 
     /**
