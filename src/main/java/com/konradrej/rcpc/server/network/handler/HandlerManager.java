@@ -2,33 +2,26 @@ package com.konradrej.rcpc.server.network.handler;
 
 import com.konradrej.rcpc.core.network.Message;
 import com.konradrej.rcpc.core.network.SocketHandler;
-import com.konradrej.rcpc.server.database.HibernateUtil;
+import com.konradrej.rcpc.server.database.AutoConnectDeviceUtil;
 import com.konradrej.rcpc.server.database.entity.AutoConnectDevice;
 import com.konradrej.rcpc.server.network.SocketHostHandler;
+import com.konradrej.rcpc.server.ui.DialogUtil;
+import com.konradrej.rcpc.server.ui.FrameHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.List;
 
 /**
  * Handles picking the correct SocketHandler.
- * <p>
- * TODO: Send some sort of notification when "always accept device" connects
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.2
+ * @version 1.3
  * @since 1.0
  */
 public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
@@ -39,35 +32,12 @@ public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
      *
      * @param socket    connected socket
      * @param available server available status
-     * @return a instance of SocketHandler setup with given socket
+     * @return an instance of SocketHandler setup with given socket
      * @since 1.0
      */
     @Override
     public SocketHandler getHandler(Socket socket, boolean available) {
         if (available) {
-            String[] options = {
-                    "Connect",
-                    "Save and connect",
-                    "Cancel"
-            };
-
-            JFrame transparentFrame = new JFrame();
-            transparentFrame.setUndecorated(true);
-            transparentFrame.setLocationRelativeTo(null);
-            transparentFrame.setAlwaysOnTop(true);
-            transparentFrame.setVisible(true);
-
-            try {
-                InputStream inputStream = HandlerManager.class.getClassLoader().getResource("icon.png").openStream();
-                ImageIcon icon = new ImageIcon(ImageIO.read(inputStream));
-
-                Image image = icon.getImage();
-                transparentFrame.setIconImage(image);
-
-            } catch (IOException e) {
-                LOGGER.error("Could not load icon. Error: " + e.getMessage());
-            }
-
             ObjectOutputStream objectOutputStream = null;
             ObjectInputStream objectInputStream = null;
             String uuid = null;
@@ -82,61 +52,41 @@ public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
                 LOGGER.error("Could not get remote device UUID. Error: " + e.getMessage());
             }
 
-            boolean deviceSaved = false;
-            try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                Query<AutoConnectDevice> query = session.createQuery("FROM AutoConnectDevice A WHERE A.uuid = :uuid", AutoConnectDevice.class);
-                query.setParameter("uuid", uuid);
+            JFrame frame = FrameHandler.getTransparentFrame();
+            frame.setVisible(true);
 
-                List<AutoConnectDevice> autoConnectDevices = query.list();
-
-                if (autoConnectDevices.size() == 1) {
-                    deviceSaved = true;
-                }
-            } catch (Exception e) {
-                LOGGER.error("Could not get saved devices. Error: " + e.getMessage());
+            boolean deviceSaved = isDeviceSaved(uuid);
+            DialogUtil.ConnectDialogAction dialogResponse;
+            if (deviceSaved) {
+                dialogResponse = DialogUtil.ConnectDialogAction.CONNECT;
+                DialogUtil.showInformationDialog(frame, "Device connected.", "A saved device has connected.");
+            } else {
+                dialogResponse = DialogUtil.showConnectDialog(frame);
             }
 
-            int acceptConnection = 0;
-            if (!deviceSaved) {
-                acceptConnection = JOptionPane.showOptionDialog(
-                        transparentFrame,
-                        "Would you like to accept this connection?",
-                        "Confirm connection",
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        options,
-                        options[2]
-                );
-            }
+            frame.setVisible(false);
 
-            transparentFrame.setVisible(false);
-
-            switch (acceptConnection) {
-                case 0:
+            switch (dialogResponse) {
+                case CONNECT:
                     return new AcceptHandler(socket, objectOutputStream, objectInputStream);
-                case 1:
+                case SAVE_AND_CONNECT:
                     AutoConnectDevice autoConnectDevice = new AutoConnectDevice(uuid);
-                    Transaction transaction = null;
-                    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-                        transaction = session.beginTransaction();
+                    AutoConnectDeviceUtil.saveDevice(autoConnectDevice);
 
-                        session.save(autoConnectDevice);
-
-                        transaction.commit();
-                    } catch (Exception e) {
-                        if (transaction != null) {
-                            transaction.rollback();
-                        }
-
-                        LOGGER.error("Could not save device. Error: " + e.getMessage());
-                    }
                     return new AcceptHandler(socket, objectOutputStream, objectInputStream);
-                case 2:
+                case CANCEL:
                     return new RefuseHandler(socket, true, objectOutputStream, objectInputStream);
             }
         }
 
         return new RefuseHandler(socket, false);
+    }
+
+    private boolean isDeviceSaved(String uuid) {
+        if (uuid != null) {
+            return AutoConnectDeviceUtil.containsDevice(uuid);
+        }
+
+        return false;
     }
 }
