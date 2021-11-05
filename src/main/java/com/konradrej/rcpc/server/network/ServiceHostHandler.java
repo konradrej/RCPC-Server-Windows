@@ -17,48 +17,53 @@ import java.util.List;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.0
+ * @version 1.1
+ * @since 1.0
  */
 public class ServiceHostHandler {
     private static final Logger LOGGER = LogManager.getLogger(ServiceHostHandler.class);
 
     private static final String SERVICE_TYPE = "_rcpc._tcp.local";
-    private static final Thread onShutdown = new Thread(ServiceHostHandler::stop);
     private static final List<JmDNS> jmDNS = new ArrayList<>();
 
     /**
      * Registers DNS-SD RCPC service.
      *
      * @param port service port
+     * @since 1.0
      */
     public static void start(int port) {
-        try {
-            InetAddress[] addresses = InetAddress.getAllByName(InetAddress.getLocalHost().getCanonicalHostName());
-            if (addresses != null) {
-                String serviceName;
+        new Thread(() -> {
+            try {
+                InetAddress[] addresses = InetAddress.getAllByName(InetAddress.getLocalHost().getCanonicalHostName());
+                if (addresses != null) {
+                    String serviceName;
 
-                for (InetAddress address : addresses) {
-                    serviceName = "RCPC Host " + address.getCanonicalHostName();
+                    for (InetAddress address : addresses) {
+                        serviceName = "RCPC Host " + address.getCanonicalHostName();
 
-                    ServiceInfo serviceInfo = ServiceInfo.create(SERVICE_TYPE, serviceName, port, "");
+                        ServiceInfo serviceInfo = ServiceInfo.create(SERVICE_TYPE, serviceName, port, "");
 
-                    JmDNS dns = JmDNS.create(address);
-                    dns.registerService(serviceInfo);
+                        JmDNS dns = JmDNS.create(address);
+                        dns.registerService(serviceInfo);
 
-                    jmDNS.add(dns);
+                        jmDNS.add(dns);
 
-                    LOGGER.info("DNS-SD service registered. Service name: " + serviceName);
+                        LOGGER.info("DNS-SD service registered. Service name: " + serviceName);
+                    }
                 }
-            }
-        } catch (IOException e) {
-            LOGGER.error("DNS-SD service could not be registered.\n" + e.getLocalizedMessage());
+            } catch (IOException e) {
+                LOGGER.error("DNS-SD service could not be registered.\n" + e.getLocalizedMessage());
 
-            stop();
-        }
+                stop();
+            }
+        }).start();
     }
 
     /**
      * Unregisters DNS-SD RCPC service.
+     *
+     * @since 1.0
      */
     public static void stop() {
         Iterator<JmDNS> it = jmDNS.iterator();
