@@ -11,7 +11,7 @@ import java.util.Properties;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 public class SSLContextFactory {
@@ -41,7 +41,7 @@ public class SSLContextFactory {
      * @param keyStorePassword   keystore password
      * @param trustStoreFilename truststore filename to get from resources folder
      * @param trustStorePassword truststore password
-     * @return a configured SSLContext instance or null if an error occurred
+     * @return a configured SSLContext instance, a default SSLContext instance if keystore/truststore error or null if SSLContext creation error
      * @since 1.0
      */
     public static SSLContext getConfiguredInstance(String keyStoreFilename, String keyStorePassword, String trustStoreFilename, String trustStorePassword) {
@@ -49,10 +49,14 @@ public class SSLContextFactory {
         TrustManager[] trustStoreManagers = getTrustManagers(trustStoreFilename, trustStorePassword);
 
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
-            sslContext.init(keyStoreManagers, trustStoreManagers, null);
+            if (keyStoreManagers == null || trustStoreManagers == null) {
+                return SSLContext.getDefault();
+            } else {
+                SSLContext sslContext = SSLContext.getInstance("TLSv1.3");
+                sslContext.init(keyStoreManagers, trustStoreManagers, null);
 
-            return sslContext;
+                return sslContext;
+            }
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             return null;
         }

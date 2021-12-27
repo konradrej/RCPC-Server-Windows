@@ -8,7 +8,6 @@ import javax.jmdns.ServiceInfo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -17,7 +16,7 @@ import java.util.List;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.1
+ * @version 1.2
  * @since 1.0
  */
 public class ServiceHostHandler {
@@ -35,7 +34,7 @@ public class ServiceHostHandler {
     public static void start(int port) {
         new Thread(() -> {
             try {
-                InetAddress[] addresses = InetAddress.getAllByName(InetAddress.getLocalHost().getCanonicalHostName());
+                InetAddress[] addresses = InetAddress.getAllByName(InetAddress.getLocalHost().getCanonicalHostName().replace(".mshome.net", ""));
                 if (addresses != null) {
                     String serviceName;
 
@@ -66,16 +65,12 @@ public class ServiceHostHandler {
      * @since 1.0
      */
     public static void stop() {
-        Iterator<JmDNS> it = jmDNS.iterator();
-        while (it.hasNext()) {
-            JmDNS jmDNS = it.next();
-
+        for (JmDNS jmDNS : jmDNS) {
             jmDNS.unregisterAllServices();
             try {
                 jmDNS.close();
             } catch (IOException ignored) {
             }
-            it.remove();
         }
 
         LOGGER.info("DNS-SD services unregistered.");
