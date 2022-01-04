@@ -25,7 +25,7 @@ jar {
 }
 
 group 'com.konradrej.rcpc'
-version '1.0'
+version '1.1.0'
 
 repositories {
     mavenCentral()
@@ -44,7 +44,7 @@ dependencies {
     implementation 'com.h2database:h2:1.4.200'
     implementation 'org.hibernate:hibernate-core:5.5.8.Final'
 
-    implementation files('libs/RCPC-Core-1.6.jar')
+    implementation files('libs/RCPC-Core-1.7.jar')
 }
 
 test {
