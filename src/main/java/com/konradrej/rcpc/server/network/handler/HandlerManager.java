@@ -1,7 +1,5 @@
 package com.konradrej.rcpc.server.network.handler;
 
-import com.konradrej.rcpc.core.network.Message;
-import com.konradrej.rcpc.core.network.SocketHandler;
 import com.konradrej.rcpc.server.database.AutoConnectDeviceUtil;
 import com.konradrej.rcpc.server.database.entity.AutoConnectDevice;
 import com.konradrej.rcpc.server.network.SocketHostHandler;
@@ -9,19 +7,19 @@ import com.konradrej.rcpc.server.ui.DialogUtil;
 import com.konradrej.rcpc.server.ui.FrameHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Handles picking the correct SocketHandler.
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.3
+ * @version 2.0
  * @since 1.0
  */
 public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
@@ -38,17 +36,17 @@ public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
     @Override
     public SocketHandler getHandler(Socket socket, boolean available) {
         if (available) {
-            ObjectOutputStream objectOutputStream = null;
-            ObjectInputStream objectInputStream = null;
+            BufferedWriter bufferedWriter = null;
+            BufferedReader bufferedReader = null;
             String uuid = null;
 
             try {
-                objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                objectInputStream = new ObjectInputStream(socket.getInputStream());
+                bufferedWriter = new BufferedWriter((new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8)));
+                bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 
-                Message message = (Message) objectInputStream.readObject();
-                uuid = (String) message.getMessageData();
-            } catch (IOException | ClassNotFoundException e) {
+                JSONObject message = new JSONObject(bufferedReader.readLine());
+                uuid = message.getString("uuid");
+            } catch (IOException e) {
                 LOGGER.error("Could not get remote device UUID. Error: " + e.getMessage());
             }
 
@@ -68,14 +66,14 @@ public class HandlerManager implements SocketHostHandler.SocketHandlerManager {
 
             switch (dialogResponse) {
                 case CONNECT:
-                    return new AcceptHandler(socket, objectOutputStream, objectInputStream);
+                    return new AcceptHandler(socket, bufferedWriter, bufferedReader);
                 case SAVE_AND_CONNECT:
                     AutoConnectDevice autoConnectDevice = new AutoConnectDevice(uuid);
                     AutoConnectDeviceUtil.saveDevice(autoConnectDevice);
 
-                    return new AcceptHandler(socket, objectOutputStream, objectInputStream);
+                    return new AcceptHandler(socket, bufferedWriter, bufferedReader);
                 case CANCEL:
-                    return new RefuseHandler(socket, true, objectOutputStream, objectInputStream);
+                    return new RefuseHandler(socket, true, bufferedWriter, bufferedReader);
             }
         }
 

@@ -1,13 +1,11 @@
 package com.konradrej.rcpc.server.network.handler;
 
-import com.konradrej.rcpc.core.network.Message;
-import com.konradrej.rcpc.core.network.MessageType;
-import com.konradrej.rcpc.core.network.SocketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.net.Socket;
 
 /**
@@ -15,7 +13,7 @@ import java.net.Socket;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.1
+ * @version 2.0
  * @since 1.0
  */
 public class RefuseHandler extends SocketHandler {
@@ -38,25 +36,25 @@ public class RefuseHandler extends SocketHandler {
     /**
      * Full constructor.
      *
-     * @param socket             the connected socket
-     * @param userCancelled      true if user cancelled connection
-     * @param objectOutputStream object output stream to pass, null to create from socket
-     * @param objectInputStream  object input stream to pass, null to create from socket
+     * @param socket         the connected socket
+     * @param userCancelled  true if user cancelled connection
+     * @param bufferedWriter object output stream to pass, null to create from socket
+     * @param bufferedReader object input stream to pass, null to create from socket
      */
-    public RefuseHandler(Socket socket, boolean userCancelled, ObjectOutputStream objectOutputStream, ObjectInputStream objectInputStream) {
-        super(socket, false, true, LOGGER, objectOutputStream, objectInputStream);
+    public RefuseHandler(Socket socket, boolean userCancelled, BufferedWriter bufferedWriter, BufferedReader bufferedReader) {
+        super(socket, false, true, LOGGER, bufferedWriter, bufferedReader);
 
         this.userCancelled = userCancelled;
     }
 
     @Override
     public void run() {
-        Message message;
+        JSONObject message = new JSONObject();
 
         if (userCancelled) {
-            message = new Message(MessageType.INFO_USER_CLOSED_CONNECTION);
+            message.put("type", "INFO_USER_CLOSED_CONNECTION");
         } else {
-            message = new Message(MessageType.ERROR_SERVER_BUSY);
+            message.put("type", "ERROR_SERVER_BUSY");
         }
 
         outputQueue.add(message);

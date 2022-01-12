@@ -1,6 +1,6 @@
 package com.konradrej.rcpc.server.network;
 
-import com.konradrej.rcpc.core.network.SocketHandler;
+import com.konradrej.rcpc.server.network.handler.SocketHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Konrad Rej
  * @author www.konradrej.com
- * @version 1.2
+ * @version 2.0
  * @since 1.0
  */
 public class SocketHostHandler {
